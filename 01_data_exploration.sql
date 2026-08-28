@@ -112,13 +112,13 @@ WHERE LOWER(end_station_name) LIKE '%test%'
 -- ------------------------------------------------------------
 
 SELECT
-  COUNTIF(TIMESTAMP_DIFF(ended_at, started_at, MINUTE) < 1) AS under_one_minute,
-  COUNTIF(TIMESTAMP_DIFF(ended_at, started_at, MINUTE) > 1440) AS over_one_day,
+  COUNTIF(TIMESTAMP_DIFF(ended_at, started_at, MINUTE) <= 1) AS one_minute_or_under,
+  COUNTIF(TIMESTAMP_DIFF(ended_at, started_at, MINUTE) >= 1440) AS one_day_or_over,
   COUNT(*) AS total_rides
 FROM `cyclistic-case-study-505614.cyclistic_trips.trips_raw`;
 
--- FINDING: out of 5,552,994 total rides — 147,401 under one minute
--- (~2.7%), 5,585 over one day (~0.1%).
+-- FINDING: out of 5,552,994 total rides — 261,512 lasting one minute
+-- or less (~4.7%), 5,585 lasting a day or more (~0.1%).
 
 -- Break the short-ride group down by rider/bike type.
 SELECT
@@ -126,17 +126,15 @@ SELECT
   rideable_type,
   COUNT(*) AS num_short_rides
 FROM `cyclistic-case-study-505614.cyclistic_trips.trips_raw`
-WHERE TIMESTAMP_DIFF(ended_at, started_at, MINUTE) < 1
+WHERE TIMESTAMP_DIFF(ended_at, started_at, MINUTE) <= 1
 GROUP BY member_casual, rideable_type
 ORDER BY num_short_rides DESC;
 
--- FINDING: short rides are almost entirely electric bikes
--- (79,009 casual + 68,380 member = 147,389 of 147,401 total).
--- Classic bikes account for only 12 short rides combined. This is
--- a bike-type-specific pattern, not a rider-type-specific one — it
--- is not explained by the case study materials or by this dataset
--- alone. A possible contributing factor, based on Divvy's own
--- published rider documentation
+-- FINDING: short rides skew electric (119,753 member + 100,671
+-- casual = 220,424 of 261,512 total, ~84.3%), though classic bikes
+-- account for a meaningful share too (33,096 member + 7,992 casual
+-- = 41,088, ~15.7%). A possible contributing factor for the electric
+-- share, based on Divvy's own published rider documentation
 -- (https://help.divvybikes.com/hc/en-us/articles/360033122072-How-to-dock-a-bike):
 -- electric bikes can be locked and unlocked independently of a
 -- docking station, using a built-in cable lock, which may make it
