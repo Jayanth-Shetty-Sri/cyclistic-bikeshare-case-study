@@ -118,12 +118,10 @@ ORDER BY num_rides DESC;
 
 -- 10. Ride end location density, by rider type 
 SELECT
-  member_casual,
   ROUND(end_lat, 3) AS grid_lat,
   ROUND(end_lng, 3) AS grid_lng,
+  member_casual,
   COUNT(*) AS num_rides
 FROM `cyclistic-case-study-505614.cyclistic_trips.trips_clean`
-WHERE end_lat IS NOT NULL
-  AND end_lng IS NOT NULL
-GROUP BY member_casual, grid_lat, grid_lng
+GROUP BY grid_lat, grid_lng, member_casual
 ORDER BY num_rides DESC;
